@@ -1,0 +1,28 @@
+cabal-version:       3.0
+name:                mongoshow
+version:             0.1.0.0
+synopsis:            Generates HTML file with document schemes.
+description:         Command line utility that inspects MongoDB's collections
+                     and generates simple html page with document schemes.
+license:             MIT
+license-file:        LICENSE
+author:              KMaksim
+maintainer:          KMaksim
+category:            Database
+homepage:            https://github.com/Gradi/mongoshow
+
+executable mongoshow
+  main-is:             Main.hs
+  build-depends:       base ^>=4.14.1.0
+                     , optparse-applicative
+                     , mongoDB
+                     , text
+                     , mtl
+                     , containers
+                     , bytestring
+                     , time
+                     , blaze-html
+                     , blaze-markup
+  hs-source-dirs:      app
+  other-modules:       CommandLine, BsonSchema, Utils, BsonSchemasView
+  default-language:    Haskell2010
