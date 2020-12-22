@@ -3,11 +3,12 @@ module Main where
 import qualified BsonSchema as BS
 import qualified BsonSchemasView as View
 import qualified CommandLine as CL
+import qualified Data.ByteString.Lazy as ByteString
 import qualified Data.Text as DT
 import qualified Data.Time as DateTime
 import Control.Monad.IO.Class (liftIO)
 import Database.MongoDB
-import Text.Blaze.Html.Renderer.Pretty (renderHtml)
+import Text.Blaze.Html.Renderer.Utf8 (renderHtml)
 
 main :: IO ()
 main = CL.execParser CL.programInfo >>= CL.execCommandLineContext newMain
@@ -24,7 +25,7 @@ newMain = do
     localTime <- liftIO $ DateTime.getZonedTime >>= return . DateTime.zonedTimeToLocalTime
     let html = renderHtml $ View.render View.ViewModel { View.localTime = localTime, View.schemas = schemas, View.host = host }
 
-    liftIO $ writeFile outFile html
+    liftIO $ ByteString.writeFile outFile html
     liftIO $ close pipe
 
     return ()
