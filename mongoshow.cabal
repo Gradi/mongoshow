@@ -24,5 +24,6 @@ executable mongoshow
                      , blaze-html
                      , blaze-markup
   hs-source-dirs:      app
-  other-modules:       CommandLine, BsonSchema, Utils, BsonSchemasView
+  other-modules:       CommandLine, BsonSchema, Utils, BsonSchemasView,
+                       BsonValueFormatting
   default-language:    Haskell2010

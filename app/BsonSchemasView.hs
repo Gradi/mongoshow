@@ -5,12 +5,14 @@ module BsonSchemasView
     , render
     ) where
 
-import qualified BsonSchema as BS
-import qualified Data.Text as Text
-import qualified Data.Time as DT
-import qualified Data.Time.Format as DTF
-import qualified Database.MongoDB as Mdb
+import qualified BsonSchema as BsonSchema
 import qualified Data.ByteString as ByteString
+import qualified Data.Text as Text
+import qualified Data.Time as Time
+import qualified Data.Time.Format as TimeFormat
+import qualified Database.MongoDB as Mdb
+import qualified Numeric as Numeric
+import qualified BsonValueFormatting as BsonValueFormatting
 import Control.Monad (mapM)
 import Control.Monad.Reader
 import Data.List (intersperse)
@@ -20,8 +22,8 @@ import Text.Blaze.Html5.Attributes as A
 import Utils (groupBy)
 
 data ViewModel = ViewModel {
-    localTime :: DT.LocalTime
-  , schemas :: [BS.BsonSchema]
+    localTime :: Time.LocalTime
+  , schemas :: [BsonSchema.BsonSchema]
   , host :: String }
 
 type View = Reader ViewModel Html
@@ -65,16 +67,19 @@ renderBody = do
         hr
         article $ toHtml mainContent
 
-renderTocEntry :: [BS.BsonSchema] -> View
+renderTocEntry :: [BsonSchema.BsonSchema] -> View
 renderTocEntry dbCollections = return $ H.div $ do
     aDb db $ h3 $ dbName db
-    toHtml $ intersperse br $ scToHtml <$> dbCollections
+    toHtml $ intersperse br $ schemaToHtml <$> dbCollections
 
     where db = Prelude.head dbCollections
-          scToHtml sc = aColl sc $ toHtml (col ++ " (" ++ (show $ BS.count sc) ++ ")")
-              where col = Text.unpack $ BS.collection sc
+          schemaToHtml sc = aColl sc $ do
+              toHtml $ BsonSchema.collection sc
+              " ("
+              toHtml $ BsonSchema.count sc
+              ")"
 
-renderSingleDbSection :: [BS.BsonSchema] -> View
+renderSingleDbSection :: [BsonSchema.BsonSchema] -> View
 renderSingleDbSection dbColls = do
     schemasSection <- mapM renderSchemaSection dbColls >>= return . toHtml
     return $ H.div $ do
@@ -82,80 +87,55 @@ renderSingleDbSection dbColls = do
         schemasSection
         where db = Prelude.head dbColls
 
-renderSchemaSection :: BS.BsonSchema -> View
+renderSchemaSection :: BsonSchema.BsonSchema -> View
 renderSchemaSection schema = return $ H.div $ do
     h3 ! A.id (collId schema) $ (collName schema)
-    p $ toHtml ("Documents read: " ++ (show $ BS.count schema))
-    toHtml $ BS.schema schema
+    p $ do
+        "Documents read: "
+        toHtml $ BsonSchema.count schema
+    toHtml $ BsonSchema.schema schema
     hr
 
-databaseName :: BS.BsonSchema -> BS.BsonSchema -> Bool
-databaseName l r = BS.database l == BS.database r
+-- Helpers
 
-aDb :: BS.BsonSchema -> Html -> Html
+databaseName :: BsonSchema.BsonSchema -> BsonSchema.BsonSchema -> Bool
+databaseName l r = BsonSchema.database l == BsonSchema.database r
+
+aDb :: BsonSchema.BsonSchema -> Html -> Html
 aDb schema html = a ! href (fromString ("#" ++ db)) $ html
-    where db = Text.unpack $ BS.database schema
+    where db = Text.unpack $ BsonSchema.database schema
 
-aColl :: BS.BsonSchema -> Html -> Html
+aColl :: BsonSchema.BsonSchema -> Html -> Html
 aColl schema html = a ! href (fromString ("#" ++ db ++ "." ++ coll)) $ html
-    where db = Text.unpack $ BS.database schema
-          coll = Text.unpack $ BS.collection schema
+    where db = Text.unpack $ BsonSchema.database schema
+          coll = Text.unpack $ BsonSchema.collection schema
 
-dbId :: BS.BsonSchema -> AttributeValue
-dbId = fromString . Text.unpack . BS.database
+dbId :: BsonSchema.BsonSchema -> AttributeValue
+dbId = fromString . Text.unpack . BsonSchema.database
 
-collId :: BS.BsonSchema -> AttributeValue
+collId :: BsonSchema.BsonSchema -> AttributeValue
 collId sch = fromString (db ++ "." ++ coll)
-    where db = Text.unpack $ BS.database sch
-          coll = Text.unpack $ BS.collection sch
+    where db = Text.unpack $ BsonSchema.database sch
+          coll = Text.unpack $ BsonSchema.collection sch
 
-dbName :: BS.BsonSchema -> Html
-dbName = toHtml . BS.database
+dbName :: BsonSchema.BsonSchema -> Html
+dbName = toHtml . BsonSchema.database
 
-collName :: BS.BsonSchema -> Html
+collName :: BsonSchema.BsonSchema -> Html
 collName schema = toHtml (db ++ "." ++ coll)
-    where db = Text.unpack $ BS.database schema
-          coll = Text.unpack $ BS.collection schema
+    where db = Text.unpack $ BsonSchema.database schema
+          coll = Text.unpack $ BsonSchema.collection schema
+
+timeToMarkup :: (Time.FormatTime t) => t -> Html
+timeToMarkup = toHtml . TimeFormat.formatTime TimeFormat.defaultTimeLocale TimeFormat.rfc822DateFormat
+
+instance ToMarkup Time.UTCTime where
+    toMarkup = timeToMarkup
+instance ToMarkup Time.LocalTime where
+    toMarkup = timeToMarkup
 
 instance ToMarkup Mdb.Value where
-    toMarkup (Mdb.Float val) = toHtml val
-    toMarkup (Mdb.String str) = toHtml str
-    toMarkup (Mdb.Doc document) = table $ do
-        thead $ tr $ th "Key" >> th "Value"
-        tbody $ toHtml $ fieldToRow <$> document
-        where fieldToRow (label Mdb.:= value) = tr $ td (toHtml label) >> td (toHtml value)
-    toMarkup (Mdb.Array values) = H.div $ do
-        "["
-        toHtml $ intersperse (toHtml (", " :: String)) $ toHtml <$> values
-        "]"
-    toMarkup (Mdb.Bin _) = "<Binary>"
-    toMarkup (Mdb.Fun _) = "<Function>"
-    toMarkup (Mdb.Uuid _) = "<Uuid>"
-    toMarkup (Mdb.Md5 _) = "<Md5>"
-    toMarkup (Mdb.UserDef _) = "<UserDef>"
-    toMarkup (Mdb.ObjId objId) = toHtml $ show objId
-    toMarkup (Mdb.Bool bool) = toHtml bool
-    toMarkup (Mdb.UTC utc) = toHtml utc
-    toMarkup (Mdb.Null) = "<Null>"
-    toMarkup (Mdb.RegEx (Mdb.Regex text opt)) = toHtml $ (Text.unpack text) ++ " " ++ (Text.unpack opt)
-    toMarkup (Mdb.JavaScr (Mdb.Javascript doc text)) = H.div $ do
-        p "Environment: "
-        toHtml doc
-        p "Code: "
-        toHtml text
-    toMarkup (Mdb.Sym (Mdb.Symbol sym)) = toHtml sym
-    toMarkup (Mdb.Int32 int32) = toHtml int32
-    toMarkup (Mdb.Int64 int64) = toHtml int64
-    toMarkup (Mdb.Stamp (Mdb.MongoStamp int64)) = toHtml int64
-    toMarkup (Mdb.MinMax minMax) = toHtml $ show minMax
+    toMarkup value = pre $ code $ toHtml $ BsonValueFormatting.format value
 
 instance ToMarkup Mdb.Document where
-    toMarkup doc = toHtml $ Mdb.Doc doc
-
-timeToMarkup :: (DT.FormatTime t) => t -> Html
-timeToMarkup = toHtml . DTF.formatTime DTF.defaultTimeLocale DTF.rfc822DateFormat
-
-instance ToMarkup DT.UTCTime where
-    toMarkup = timeToMarkup
-instance ToMarkup DT.LocalTime where
-    toMarkup = timeToMarkup
+    toMarkup document = toHtml $ Mdb.Doc document

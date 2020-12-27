@@ -8,7 +8,8 @@ import qualified Data.Text as DT
 import qualified Data.Time as DateTime
 import Control.Monad.IO.Class (liftIO)
 import Database.MongoDB
-import Text.Blaze.Html.Renderer.Utf8 (renderHtml)
+import Text.Blaze.Html.Renderer.Utf8
+
 
 main :: IO ()
 main = CL.execParser CL.programInfo >>= CL.execCommandLineContext newMain
