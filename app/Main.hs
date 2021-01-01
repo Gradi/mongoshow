@@ -1,14 +1,14 @@
 module Main where
 
-import qualified BsonSchema as BS
+import qualified BsonSchema as BsonSchema
 import qualified BsonSchemasView as View
 import qualified CommandLine as CL
 import qualified Data.ByteString.Lazy as ByteString
-import qualified Data.Text as DT
-import qualified Data.Time as DateTime
-import Control.Monad.IO.Class (liftIO)
+import qualified Data.Text as Text
+import qualified Data.Time as Time
 import Database.MongoDB
 import Text.Blaze.Html.Renderer.Utf8
+import Control.Monad.IO.Class (liftIO)
 
 
 main :: IO ()
@@ -23,7 +23,7 @@ newMain = do
     dbs <- access pipe master emptyDb allDatabases >>= restrictDbs
     schemas <- mapM (analyzeDatabase pipe) dbs >>= return . concat
 
-    localTime <- liftIO $ DateTime.getZonedTime >>= return . DateTime.zonedTimeToLocalTime
+    localTime <- liftIO $ Time.getZonedTime >>= return . Time.zonedTimeToLocalTime
     let html = renderHtml $ View.render View.ViewModel { View.localTime = localTime, View.schemas = schemas, View.host = host }
 
     liftIO $ ByteString.writeFile outFile html
@@ -32,29 +32,29 @@ newMain = do
     return ()
 
 
-analyzeDatabase :: Pipe -> Database -> CL.CommandLineContext IO [BS.BsonSchema]
+analyzeDatabase :: Pipe -> Database -> CL.CommandLineContext IO [BsonSchema.BsonSchema]
 analyzeDatabase pipe database = do
     collections <- access pipe master database allCollections >>= restrictCollections
     mapM (analyzeCollection pipe database) collections
 
-analyzeCollection :: Pipe -> Database -> Collection -> CL.CommandLineContext IO BS.BsonSchema
+analyzeCollection :: Pipe -> Database -> Collection -> CL.CommandLineContext IO BsonSchema.BsonSchema
 analyzeCollection pipe database collection = do
     limit <- CL.askLimit
     let filter = (select [] collection) { limit = fromIntegral limit }
     documents <- access pipe master database $ find filter >>= rest
-    return $ BS.generateSchema database collection documents
+    return $ BsonSchema.generateSchema database collection documents
 
 
 restrictDbs :: (Monad m) => [Database] -> CL.CommandLineContext m [Database]
 restrictDbs dbs = do
     maybeAllowedDatabases <- CL.askDatabases
-    let maybeAllowedDatabases' = maybeAllowedDatabases >>= return . (map DT.pack)
+    let maybeAllowedDatabases' = maybeAllowedDatabases >>= return . (map Text.pack)
     return $ maybeIntersects dbs maybeAllowedDatabases'
 
 restrictCollections :: (Monad m) => [Collection] -> CL.CommandLineContext m [Collection]
 restrictCollections colls = do
     maybeAllowedCollections <- CL.askCollections
-    let maybeAllowedCollections' = maybeAllowedCollections >>= return . (map DT.pack)
+    let maybeAllowedCollections' = maybeAllowedCollections >>= return . (map Text.pack)
     return $ maybeIntersects colls maybeAllowedCollections'
 
 maybeIntersects :: (Eq a) => [a] -> Maybe [a] -> [a]
@@ -63,4 +63,4 @@ maybeIntersects list maybeList = case maybeList of
     Just secondList -> filter (`elem` secondList) list
 
 emptyDb :: Database
-emptyDb = DT.empty
+emptyDb = Text.empty

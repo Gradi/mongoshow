@@ -4,12 +4,12 @@ module PrettyPrintBson
     ( prettyPrint
     ) where
 
-import qualified Data.Text as Text
-import qualified Database.MongoDB as Mdb
 import qualified Data.ByteString as ByteString
-import qualified Numeric as Numeric
+import qualified Data.Text as Text
 import qualified Data.Time as Time
 import qualified Data.Time.Format as TimeFormat
+import qualified Database.MongoDB as Mdb
+import qualified Numeric as Numeric
 import Prettyprinter
 import Prettyprinter.Render.Text
 import Data.List (intersperse)

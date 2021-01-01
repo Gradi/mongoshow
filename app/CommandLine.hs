@@ -34,7 +34,9 @@ commandLineParser = CommandLine
     <$> strOption (
         long "host"
      <> short 'h'
-     <> help "MongoDB host, e.g. localhost[:27017]"
+     <> help "MongoDB host"
+     <> value "localhost:27017"
+     <> showDefault
      )
     <*> strOption (long "out" <> short 'o' <> help "Out file" <> value "schemes.html" <> showDefault)
     <*> maybeMany (strOption (
