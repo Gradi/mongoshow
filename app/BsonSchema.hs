@@ -195,7 +195,9 @@ instance Mdb.Val SValue where
     val (Int64 {count, min, max})               = Mdb.Doc [ strtype "Int64", "Count" =: count, "Min" =: min, "Max" =: max ]
     val (Stamp {count})                         = Mdb.Doc [ strtype "Stamp", "Count" =: count ]
     val (MinMax {count})                        = Mdb.Doc [ strtype "MinMax", "Count" =: count ]
-    val (MultiValue values)                     = Mdb.Array $ map Mdb.val values
+    val (MultiValue values)                     = singleOrAll $ map Mdb.val values
+        where singleOrAll [x] = x
+              singleOrAll xs = Mdb.Array xs
     val (Unknown {count})                       = Mdb.Doc [ strtype "Unknown", "Count" =: count ]
 
     cast' _ = Nothing
