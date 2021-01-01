@@ -12,14 +12,15 @@ import qualified Data.Time as Time
 import qualified Data.Time.Format as TimeFormat
 import qualified Database.MongoDB as Mdb
 import qualified Numeric as Numeric
-import qualified BsonValueFormatting as BsonValueFormatting
+import qualified PrettyPrintBson as PrettyPrintBson
 import Control.Monad (mapM)
 import Control.Monad.Reader
 import Data.List (intersperse)
 import Data.String (IsString(fromString))
+import Utils (groupBy)
 import Text.Blaze.Html5 as H
 import Text.Blaze.Html5.Attributes as A
-import Utils (groupBy)
+
 
 data ViewModel = ViewModel {
     localTime :: Time.LocalTime
@@ -46,6 +47,7 @@ renderHead = do
     return $
         H.head $ do
             meta ! charset "utf-8"
+            highlightjs
             H.title $ title
 
 renderBody :: View
@@ -126,6 +128,12 @@ collName schema = toHtml (db ++ "." ++ coll)
     where db = Text.unpack $ BsonSchema.database schema
           coll = Text.unpack $ BsonSchema.collection schema
 
+highlightjs :: Html
+highlightjs = do
+    link ! rel "stylesheet" ! href "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/mono-blue.min.css"
+    script ! src "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js" $ ""
+    script "hljs.initHighlightingOnLoad();"
+
 timeToMarkup :: (Time.FormatTime t) => t -> Html
 timeToMarkup = toHtml . TimeFormat.formatTime TimeFormat.defaultTimeLocale TimeFormat.rfc822DateFormat
 
@@ -135,7 +143,7 @@ instance ToMarkup Time.LocalTime where
     toMarkup = timeToMarkup
 
 instance ToMarkup Mdb.Value where
-    toMarkup value = pre $ code $ toHtml $ BsonValueFormatting.format value
+    toMarkup value = pre $ code ! class_ "json" $ toHtml $ PrettyPrintBson.prettyPrint value
 
 instance ToMarkup Mdb.Document where
     toMarkup document = toHtml $ Mdb.Doc document

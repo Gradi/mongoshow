@@ -23,7 +23,8 @@ executable mongoshow
                      , time
                      , blaze-html
                      , blaze-markup
+                     , prettyprinter
   hs-source-dirs:      app
   other-modules:       CommandLine, BsonSchema, Utils, BsonSchemasView,
-                       BsonValueFormatting
+                       PrettyPrintBson
   default-language:    Haskell2010
