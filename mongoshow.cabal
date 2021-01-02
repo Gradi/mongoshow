@@ -24,6 +24,7 @@ executable mongoshow
                      , blaze-html
                      , blaze-markup
                      , prettyprinter
+                     , deepseq
   hs-source-dirs:      app
   other-modules:       CommandLine, BsonSchema, Utils, BsonSchemasView,
                        PrettyPrintBson

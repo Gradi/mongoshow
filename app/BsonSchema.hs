@@ -11,6 +11,8 @@ import qualified Data.Map as Map
 import qualified Data.Text as Text
 import qualified Data.Time.Clock as Clock
 import qualified Database.MongoDB as Mdb
+import Control.Monad.IO.Class
+import Control.DeepSeq
 import Data.Int (Int64)
 import Data.List (foldl')
 import Database.MongoDB ((=:))
@@ -54,13 +56,22 @@ data SValue =
 
 type BsonDocument = Map.Map Mdb.Label SValue
 
-generateSchema :: Mdb.Database -> Mdb.Collection -> [Mdb.Document] -> BsonSchema
-generateSchema db coll documents =
-    let countAndSchema = map (\d -> (1, documentToSchema d)) documents
-        (count, schema) = foldl' countAndMergeSchemas (0, Map.empty) countAndSchema
-        schema' = mapToDocument schema
-    in BsonSchema { database = db, collection = coll, schema = schema', count = count }
-    where countAndMergeSchemas (gCount, gSchema) (count, schema) = (gCount + count, Map.unionWith mergeSValue gSchema schema)
+generateSchema :: (MonadIO m) => Mdb.Collection -> Mdb.Cursor -> Mdb.Action m BsonSchema
+generateSchema collection cursor = do
+    (schema, count) <- traverseCursor cursor Map.empty 0
+    database <- Mdb.thisDatabase
+    return $ force BsonSchema { database = database, collection = collection, schema = mapToDocument schema, count = count }
+
+traverseCursor :: (MonadIO m) => Mdb.Cursor -> BsonDocument -> Int64 -> Mdb.Action m (BsonDocument, Int64)
+traverseCursor cursor currentSchema currentDocCounter = do
+    document <- Mdb.next cursor
+    case document of
+        Nothing -> return (currentSchema, currentDocCounter)
+        Just doc -> do
+            let updatedSchema = Map.unionWith mergeSValue currentSchema $ documentToSchema doc
+            let updatedCounter = currentDocCounter + 1
+            updatedSchema `deepseq` updatedCounter `deepseq` traverseCursor cursor updatedSchema updatedCounter
+
 
 documentToSchema :: Mdb.Document -> BsonDocument
 documentToSchema = foldl' fieldToSchema Map.empty
@@ -201,6 +212,66 @@ instance Mdb.Val SValue where
     val (Unknown {count})                       = Mdb.Doc [ strtype "Unknown", "Count" =: count ]
 
     cast' _ = Nothing
+
+instance NFData BsonSchema where
+    rnf s = (database s) `deepseq`
+            (collection s) `deepseq`
+            (schema s) `deepseq`
+            ((count :: BsonSchema -> Int64) s) `deepseq`
+            ()
+
+instance NFData SValue where
+    rnf (Float { count, fmin, fmax })             = count `deepseq` fmin `deepseq` fmax `deepseq` ()
+    rnf (String { count, minLen, maxLen })        = count `deepseq` minLen `deepseq` maxLen `deepseq` ()
+    rnf (Doc { count, doc })                      = count `deepseq` doc `deepseq` ()
+    rnf (Array { count, values, minLen, maxLen }) = count `deepseq` values `deepseq` minLen `deepseq` maxLen `deepseq` ()
+    rnf (Bin { count, minLen, maxLen })           = count `deepseq` minLen `deepseq` maxLen `deepseq` ()
+    rnf (Fun { count, minLen, maxLen })           = count `deepseq` minLen `deepseq` maxLen `deepseq` ()
+    rnf (Uuid { count })                          = rnf count
+    rnf (Md5 { count })                           = rnf count
+    rnf (UserDef { count, minLen, maxLen })       = count `deepseq` minLen `deepseq` maxLen `deepseq` ()
+    rnf (ObjId { count })                         = rnf count
+    rnf (Bool { count, trues, falses })           = count `deepseq` trues `deepseq` falses `deepseq` ()
+    rnf (UTC { count, dmin, dmax })               = count `deepseq` dmin `deepseq` dmax `deepseq` ()
+    rnf (Null { count })                          = rnf count
+    rnf (Regex { count })                         = rnf count
+    rnf (JavaScript { count })                    = rnf count
+    rnf (Sym { count })                           = rnf count
+    rnf (Int32 { count, min, max })               = count `deepseq` min `deepseq` max `deepseq` ()
+    rnf (Int64 { count, min, max })               = count `deepseq` min `deepseq` max `deepseq` ()
+    rnf (Stamp { count })                         = rnf count
+    rnf (MinMax { count })                        = rnf count
+    rnf (MultiValue values)                       = rnf values
+    rnf (Unknown { count })                       = rnf count
+
+instance NFData Mdb.Field where
+    rnf (label Mdb.:= value) = label `deepseq` value `deepseq` ()
+
+instance NFData Mdb.Value where
+    rnf (Mdb.Float val)                       = rnf val
+    rnf (Mdb.String val)                      = rnf val
+    rnf (Mdb.Doc doc)                         = rnf doc
+    rnf (Mdb.Array arr)                       = rnf arr
+    rnf (Mdb.Bin (Mdb.Binary val))            = rnf val
+    rnf (Mdb.Fun (Mdb.Function val))          = rnf val
+    rnf (Mdb.Uuid (Mdb.UUID val))             = rnf val
+    rnf (Mdb.Md5 (Mdb.MD5 val))               = rnf val
+    rnf (Mdb.UserDef (Mdb.UserDefined val))   = rnf val
+    rnf (Mdb.ObjId (Mdb.Oid val1 val2))       = val1 `deepseq` val2 `deepseq` ()
+    rnf (Mdb.Bool val)                        = rnf val
+    rnf (Mdb.UTC val)                         = rnf val
+    rnf (Mdb.Null)                            = ()
+    rnf (Mdb.RegEx (Mdb.Regex val1 val2))     = val1 `deepseq` val2 `deepseq` ()
+    rnf (Mdb.JavaScr (Mdb.Javascript doc env)) = doc `deepseq` env `deepseq` ()
+    rnf (Mdb.Sym (Mdb.Symbol val))            = rnf val
+    rnf (Mdb.Int32 val)                       = rnf val
+    rnf (Mdb.Int64 val)                       = rnf val
+    rnf (Mdb.Stamp (Mdb.MongoStamp val))      = rnf val
+    rnf (Mdb.MinMax val)                      = rnf val
+
+instance NFData Mdb.MinMaxKey where
+    rnf Mdb.MinKey = ()
+    rnf Mdb.MaxKey = ()
 
 mapToDocument :: BsonDocument -> Mdb.Document
 mapToDocument = map (\(k, a) -> k Mdb.=: a) . Map.toList

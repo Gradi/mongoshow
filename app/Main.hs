@@ -41,8 +41,9 @@ analyzeCollection :: Pipe -> Database -> Collection -> CL.CommandLineContext IO 
 analyzeCollection pipe database collection = do
     limit <- CL.askLimit
     let filter = (select [] collection) { limit = fromIntegral limit }
-    documents <- access pipe master database $ find filter >>= rest
-    return $ BsonSchema.generateSchema database collection documents
+    cursor <- access pipe master database $ find filter
+    schema <- access pipe master database $ BsonSchema.generateSchema collection cursor
+    return schema
 
 
 restrictDbs :: (Monad m) => [Database] -> CL.CommandLineContext m [Database]
