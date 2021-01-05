@@ -11,8 +11,7 @@ maintainer:          KMaksim
 category:            Database
 homepage:            https://github.com/Gradi/mongoshow
 
-executable mongoshow
-  main-is:             Main.hs
+library libmongoshow
   build-depends:       base ^>=4.14.1.0
                      , optparse-applicative
                      , mongoDB
@@ -25,7 +24,16 @@ executable mongoshow
                      , blaze-markup
                      , prettyprinter
                      , deepseq
-  hs-source-dirs:      app
-  other-modules:       CommandLine, BsonSchema, Utils, BsonSchemasView,
+  hs-source-dirs:      lib
+  other-modules:       CommandLine, BsonSchema, BsonSchemasView,
                        PrettyPrintBson
+  exposed-modules:     LibMain, Utils
+  default-language:    Haskell2010
+
+
+executable mongoshow
+  main-is:             Main.hs
+  hs-source-dirs:      app
+  build-depends:       libmongoshow
+                     , base
   default-language:    Haskell2010
