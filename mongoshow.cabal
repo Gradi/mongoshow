@@ -12,18 +12,18 @@ category:            Database
 homepage:            https://github.com/Gradi/mongoshow
 
 library libmongoshow
-  build-depends:       base ^>=4.14.1.0
-                     , optparse-applicative
-                     , mongoDB
-                     , text
-                     , mtl
-                     , containers
-                     , bytestring
-                     , time
-                     , blaze-html
-                     , blaze-markup
-                     , prettyprinter
-                     , deepseq
+  build-depends:       base                  >= 4.14.1 && < 4.15
+                     , blaze-html            >= 0.9.1 && < 0.10
+                     , bytestring            >= 0.10.12 && < 0.11
+                     , deepseq               >= 1.4.4 && < 1.5
+                     , text                  >= 1.2.4 && < 1.3
+                     , containers            >= 0.6.2 && < 0.7
+                     , blaze-markup          >= 0.8.2 && < 0.9
+                     , mongoDB               >= 2.7.0 && < 2.8
+                     , mtl                   >= 2.2.2 && < 2.3
+                     , time                  >= 1.9.3 && < 1.10
+                     , optparse-applicative  >= 0.16.1 && < 0.17
+                     , prettyprinter         >= 1.7.0 && < 1.8
   hs-source-dirs:      lib
   other-modules:       CommandLine, BsonSchema, BsonSchemasView,
                        PrettyPrintBson
@@ -35,7 +35,7 @@ executable mongoshow
   main-is:             Main.hs
   hs-source-dirs:      app
   build-depends:       libmongoshow
-                     , base
+                     , base                  >= 4.14.1 && < 4.15
   default-language:    Haskell2010
 
 test-suite test-mongoshow
@@ -43,7 +43,7 @@ test-suite test-mongoshow
   main-is:             Main.hs
   hs-source-dirs:      tests
   build-depends:       libmongoshow
-                     , base
+                     , base                  >= 4.14.1 && < 4.15
                      , QuickCheck
   other-modules:       TestUtils
   default-language:    Haskell2010
