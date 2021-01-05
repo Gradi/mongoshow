@@ -10,7 +10,6 @@ module CommandLine
     , askDatabases
     , askCollections
     , askLimit
-    , askVerbose
 
     , execParser
     ) where
@@ -25,8 +24,7 @@ data CommandLine = CommandLine {
   , outFile :: String
   , databases :: Maybe [String]
   , collections :: Maybe [String]
-  , limit :: Int
-  , verbose :: Bool } deriving (Show)
+  , limit :: Int } deriving (Show)
 
 commandLineParser :: Parser CommandLine
 commandLineParser = CommandLine
@@ -52,7 +50,6 @@ commandLineParser = CommandLine
      <> help "Limits number of bson documents to read. If not set then all documents will be scanned."
      <> value 0
      <> showDefault)
-    <*> switch (long "verbose" <> short 'v' <> help "Be chatty.")
 
 programInfo :: ParserInfo CommandLine
 programInfo = info (commandLineParser <**> helper) (
@@ -76,9 +73,6 @@ askLimit :: (Monad m) => CommandLineContext m Int
 askLimit = do
     limit <- asks limit
     return (if limit < 0 then 0 else limit)
-
-askVerbose :: (Monad m) => CommandLineContext m Bool
-askVerbose = asks verbose
 
 execCommandLineContext :: CommandLineContext m a -> CommandLine -> m a
 execCommandLineContext = runReaderT
