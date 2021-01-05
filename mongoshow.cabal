@@ -37,3 +37,13 @@ executable mongoshow
   build-depends:       libmongoshow
                      , base
   default-language:    Haskell2010
+
+test-suite test-mongoshow
+  type:                exitcode-stdio-1.0
+  main-is:             Main.hs
+  hs-source-dirs:      tests
+  build-depends:       libmongoshow
+                     , base
+                     , QuickCheck
+  other-modules:       TestUtils
+  default-language:    Haskell2010
