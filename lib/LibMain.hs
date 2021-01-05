@@ -48,7 +48,6 @@ analyzeCollection pipe database collection = do
     access pipe master database $ BsonSchema.generateSchema collection cursor
 
 
-
 restrictDbs :: (Monad m) => [Database] -> CL.CommandLineContext m [Database]
 restrictDbs dbs = do
     maybeAllowedDatabases <- CL.askDatabases
