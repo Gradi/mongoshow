@@ -6,14 +6,11 @@ module BsonSchemasView
     ) where
 
 import qualified BsonSchema as BsonSchema
-import qualified Data.ByteString as ByteString
 import qualified Data.Text as Text
 import qualified Data.Time as Time
 import qualified Data.Time.Format as TimeFormat
 import qualified Database.MongoDB as Mdb
-import qualified Numeric as Numeric
 import qualified PrettyPrintBson as PrettyPrintBson
-import Control.Monad (mapM)
 import Control.Monad.Reader
 import Data.List (intersperse)
 import Data.String (IsString(fromString))

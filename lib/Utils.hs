@@ -24,6 +24,6 @@ sumBy plus _ (x:y:xs) = x `plus` y `plus` sumBy plus undefined xs
 
 addOrCreateToSublist :: (a -> a -> Bool) -> [[a]] -> a -> [[a]]
 addOrCreateToSublist _ [] a = [[a]]
-addOrCreateToSublist eq (sublist@(x:xs):ys) a
+addOrCreateToSublist eq (sublist@(x:_):ys) a
     | x `eq` a = (sublist ++ [a]) : ys
     | otherwise = sublist : addOrCreateToSublist eq ys a

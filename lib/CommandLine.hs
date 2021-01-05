@@ -16,7 +16,6 @@ module CommandLine
     ) where
 
 import Options.Applicative
-import Data.Semigroup ((<>))
 import Control.Monad.Reader
 
 type CommandLineContext = ReaderT CommandLine
