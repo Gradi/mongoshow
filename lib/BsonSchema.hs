@@ -105,70 +105,70 @@ bsonValueToSValue (Mdb.Array array)                   = Array      { count = 1, 
 
 
 mergeSValue :: SValue -> SValue -> SValue
-mergeSValue (Float { count = lcount, fmin = lfmin, fmax =lfmax })
-            (Float { count = rcount, fmin = rfmin, fmax = rfmax }) =
+mergeSValue Float { count = lcount, fmin = lfmin, fmax =lfmax }
+            Float { count = rcount, fmin = rfmin, fmax = rfmax } =
             Float { count = lcount + rcount, fmin = minOf lfmin rfmin, fmax = maxOf lfmax rfmax }
-mergeSValue (String { count = lcount, minLen = lminLen, maxLen = lmaxLen })
-            (String { count = rcount, minLen = rminLen, maxLen = rmaxLen }) =
+mergeSValue String { count = lcount, minLen = lminLen, maxLen = lmaxLen }
+            String { count = rcount, minLen = rminLen, maxLen = rmaxLen } =
             String { count = lcount + rcount, minLen = minOf lminLen rminLen, maxLen = maxOf lmaxLen rmaxLen }
-mergeSValue (Doc { count = lcount, doc = ldoc })
-            (Doc { count = rcount, doc = rdoc }) =
+mergeSValue Doc { count = lcount, doc = ldoc }
+            Doc { count = rcount, doc = rdoc } =
             Doc { count = lcount + rcount, doc = Map.unionWith mergeSValue ldoc rdoc }
-mergeSValue (Array { count = lcount, values = lvalues, minLen = lminLen, maxLen = lmaxLen })
-            (Array { count = rcount, values = rvalues, minLen = rminLen, maxLen = rmaxLen }) =
+mergeSValue Array { count = lcount, values = lvalues, minLen = lminLen, maxLen = lmaxLen }
+            Array { count = rcount, values = rvalues, minLen = rminLen, maxLen = rmaxLen } =
             Array { count = lcount + rcount, values = sumArray (lvalues ++ rvalues), minLen = minOf lminLen rminLen, maxLen = maxOf lmaxLen rmaxLen }
             where sumArray [] = []
                   sumArray x = [sumBy mergeSValue undefined x]
-mergeSValue (Bin { count = lcount, minLen = lminLen, maxLen = lmaxLen })
-            (Bin { count = rcount, minLen = rminLen, maxLen = rmaxLen }) =
+mergeSValue Bin { count = lcount, minLen = lminLen, maxLen = lmaxLen }
+            Bin { count = rcount, minLen = rminLen, maxLen = rmaxLen } =
             Bin { count = lcount + rcount, minLen = minOf lminLen rminLen, maxLen = maxOf lmaxLen rmaxLen }
-mergeSValue (Fun { count = lcount, minLen = lminLen, maxLen = lmaxLen })
-            (Fun { count = rcount, minLen = rminLen, maxLen = rmaxLen }) =
+mergeSValue Fun { count = lcount, minLen = lminLen, maxLen = lmaxLen }
+            Fun { count = rcount, minLen = rminLen, maxLen = rmaxLen } =
             Fun { count = lcount + rcount, minLen = minOf lminLen rminLen, maxLen = maxOf lmaxLen rmaxLen}
-mergeSValue (Uuid { count = lcount })
-            (Uuid { count = rcount }) =
+mergeSValue Uuid { count = lcount }
+            Uuid { count = rcount } =
             Uuid { count = lcount + rcount }
-mergeSValue (Md5 { count = lcount })
-            (Md5 { count = rcount }) =
+mergeSValue Md5 { count = lcount }
+            Md5 { count = rcount } =
             Md5 { count = lcount + rcount }
-mergeSValue (UserDef { count = lcount, minLen = lminLen, maxLen = lmaxLen })
-            (UserDef { count = rcount, minLen = rminLen, maxLen = rmaxLen }) =
+mergeSValue UserDef { count = lcount, minLen = lminLen, maxLen = lmaxLen }
+            UserDef { count = rcount, minLen = rminLen, maxLen = rmaxLen } =
             UserDef { count = lcount + rcount, minLen = minOf lminLen rminLen, maxLen = maxOf lmaxLen rmaxLen }
-mergeSValue (ObjId { count = lcount })
-            (ObjId { count = rcount }) =
+mergeSValue ObjId { count = lcount }
+            ObjId { count = rcount } =
             ObjId { count = lcount + rcount }
-mergeSValue (Bool { count = lcount, trues = ltrues, falses = lfalses })
-            (Bool { count = rcount, trues = rtrues, falses = rfalses }) =
+mergeSValue Bool { count = lcount, trues = ltrues, falses = lfalses }
+            Bool { count = rcount, trues = rtrues, falses = rfalses } =
             Bool { count = lcount + rcount, trues = ltrues + rtrues, falses = lfalses + rfalses }
-mergeSValue (UTC { count = lcount, dmin = ldmin, dmax = ldmax })
-            (UTC { count = rcount, dmin = rdmin, dmax = rdmax }) =
+mergeSValue UTC { count = lcount, dmin = ldmin, dmax = ldmax }
+            UTC { count = rcount, dmin = rdmin, dmax = rdmax } =
             UTC { count = lcount + rcount, dmin = minOf ldmin rdmin, dmax = maxOf ldmax rdmax }
-mergeSValue (Null { count = lcount })
-            (Null { count = rcount }) =
+mergeSValue Null { count = lcount }
+            Null { count = rcount } =
             Null { count = lcount + rcount }
-mergeSValue (Regex { count = lcount })
-            (Regex { count = rcount }) =
+mergeSValue Regex { count = lcount }
+            Regex { count = rcount } =
             Regex { count = lcount + rcount }
-mergeSValue (JavaScript { count = lcount })
-            (JavaScript { count = rcount }) =
+mergeSValue JavaScript { count = lcount }
+            JavaScript { count = rcount } =
             JavaScript { count = lcount + rcount }
-mergeSValue (Sym { count = lcount })
-            (Sym { count = rcount }) =
+mergeSValue Sym { count = lcount }
+            Sym { count = rcount } =
             Sym { count = lcount + rcount }
-mergeSValue (Int32 { count = lcount, min = lmin, max = lmax })
-            (Int32 { count = rcount, min = rmin, max = rmax }) =
+mergeSValue Int32 { count = lcount, min = lmin, max = lmax }
+            Int32 { count = rcount, min = rmin, max = rmax } =
             Int32 { count = lcount + rcount, min = minOf lmin rmin, max = maxOf lmax rmax }
-mergeSValue (Int64 { count = lcount, min = lmin, max = lmax })
-            (Int64 { count = rcount, min = rmin, max = rmax }) =
+mergeSValue Int64 { count = lcount, min = lmin, max = lmax }
+            Int64 { count = rcount, min = rmin, max = rmax } =
             Int64 { count = lcount + rcount, min = minOf lmin rmin, max = maxOf lmax rmax }
-mergeSValue (Stamp { count = lcount })
-            (Stamp { count = rcount }) =
+mergeSValue Stamp { count = lcount }
+            Stamp { count = rcount } =
             Stamp { count = lcount + rcount }
-mergeSValue (MinMax { count = lcount })
-            (MinMax { count = rcount }) =
+mergeSValue MinMax { count = lcount }
+            MinMax { count = rcount } =
             MinMax { count = lcount + rcount }
-mergeSValue (Unknown { count = lcount })
-            (Unknown { count = rcount }) =
+mergeSValue Unknown { count = lcount }
+            Unknown { count = rcount } =
             Unknown { count = lcount + rcount }
 mergeSValue (MultiValue left)
             (MultiValue right) =
@@ -186,63 +186,63 @@ mergeSValue left right = MultiValue [left, right]
 
 
 instance Mdb.Val SValue where
-    val (Float { count, fmin, fmax})            = Mdb.Doc [ strtype "Float", "Count" =: count, "Min" =: fmin, "Max" =: fmax ]
-    val (String {count, minLen, maxLen})        = Mdb.Doc [ strtype "String", "Count" =: count, "MinLength" =: minLen, "MaxLength" =: maxLen ]
-    val (Doc {count, doc})                      = Mdb.Doc [ "Type" =: mapToDocument doc, "Count" =: count, "Properties" =: length doc ]
-    val (Array {count, values, minLen, maxLen}) = Mdb.Doc [ "Type" =: values, "Count" =: count, "MinLength" =: minLen, "MaxLength" =: maxLen ]
-    val (Bin {count, minLen, maxLen})           = Mdb.Doc [ strtype "Bin", "Count" =: count, "MinLength" =: minLen, "MaxLength" =: maxLen ]
-    val (Fun {count, minLen, maxLen})           = Mdb.Doc [ strtype "Fun", "Count" =: count, "MinLength" =: minLen, "MaxLength" =: maxLen ]
-    val (Uuid {count})                          = Mdb.Doc [ strtype "Uuid", "Count" =: count ]
-    val (Md5 {count})                           = Mdb.Doc [ strtype "Md5", "Count" =: count ]
-    val (UserDef {count, minLen, maxLen})       = Mdb.Doc [ strtype "UserDef", "Count" =: count, "MinLength" =: minLen, "MaxLength" =: maxLen ]
-    val (ObjId {count})                         = Mdb.Doc [ strtype "ObjectId", "Count" =: count ]
-    val (Bool {count, trues, falses})           = Mdb.Doc [ strtype "Bool", "Count" =: count, "Trues" =: trues, "Falses" =: falses ]
-    val (UTC {count, dmin, dmax})               = Mdb.Doc [ strtype "UTCTime", "Count" =: count, "Min" =: dmin, "Max" =: dmax ]
-    val (Null {count})                          = Mdb.Doc [ strtype "Null", "Count" =: count ]
-    val (Regex {count})                         = Mdb.Doc [ strtype "Regex", "Count" =: count ]
-    val (JavaScript {count})                    = Mdb.Doc [ strtype "JavaScript", "Count" =: count ]
-    val (Sym { count})                          = Mdb.Doc [ strtype "Symbol", "Count" =: count ]
-    val (Int32 {count, min, max})               = Mdb.Doc [ strtype "Int32", "Count" =: count, "Min" =: min, "Max" =: max ]
-    val (Int64 {count, min, max})               = Mdb.Doc [ strtype "Int64", "Count" =: count, "Min" =: min, "Max" =: max ]
-    val (Stamp {count})                         = Mdb.Doc [ strtype "Stamp", "Count" =: count ]
-    val (MinMax {count})                        = Mdb.Doc [ strtype "MinMax", "Count" =: count ]
-    val (MultiValue values)                     = singleOrAll $ map Mdb.val values
+    val Float {count, fmin, fmax}             = Mdb.Doc [ strtype "Float", "Count" =: count, "Min" =: fmin, "Max" =: fmax ]
+    val String {count, minLen, maxLen}        = Mdb.Doc [ strtype "String", "Count" =: count, "MinLength" =: minLen, "MaxLength" =: maxLen ]
+    val Doc {count, doc}                      = Mdb.Doc [ "Type" =: mapToDocument doc, "Count" =: count, "Properties" =: length doc ]
+    val Array {count, values, minLen, maxLen} = Mdb.Doc [ "Type" =: values, "Count" =: count, "MinLength" =: minLen, "MaxLength" =: maxLen ]
+    val Bin {count, minLen, maxLen}           = Mdb.Doc [ strtype "Bin", "Count" =: count, "MinLength" =: minLen, "MaxLength" =: maxLen ]
+    val Fun {count, minLen, maxLen}           = Mdb.Doc [ strtype "Fun", "Count" =: count, "MinLength" =: minLen, "MaxLength" =: maxLen ]
+    val Uuid {count}                          = Mdb.Doc [ strtype "Uuid", "Count" =: count ]
+    val Md5 {count}                           = Mdb.Doc [ strtype "Md5", "Count" =: count ]
+    val UserDef {count, minLen, maxLen}       = Mdb.Doc [ strtype "UserDef", "Count" =: count, "MinLength" =: minLen, "MaxLength" =: maxLen ]
+    val ObjId {count}                         = Mdb.Doc [ strtype "ObjectId", "Count" =: count ]
+    val Bool {count, trues, falses}           = Mdb.Doc [ strtype "Bool", "Count" =: count, "Trues" =: trues, "Falses" =: falses ]
+    val UTC {count, dmin, dmax}               = Mdb.Doc [ strtype "UTCTime", "Count" =: count, "Min" =: dmin, "Max" =: dmax ]
+    val Null {count}                          = Mdb.Doc [ strtype "Null", "Count" =: count ]
+    val Regex {count}                         = Mdb.Doc [ strtype "Regex", "Count" =: count ]
+    val JavaScript {count}                    = Mdb.Doc [ strtype "JavaScript", "Count" =: count ]
+    val Sym {count}                           = Mdb.Doc [ strtype "Symbol", "Count" =: count ]
+    val Int32 {count, min, max}               = Mdb.Doc [ strtype "Int32", "Count" =: count, "Min" =: min, "Max" =: max ]
+    val Int64 {count, min, max}               = Mdb.Doc [ strtype "Int64", "Count" =: count, "Min" =: min, "Max" =: max ]
+    val Stamp {count}                         = Mdb.Doc [ strtype "Stamp", "Count" =: count ]
+    val MinMax {count}                        = Mdb.Doc [ strtype "MinMax", "Count" =: count ]
+    val (MultiValue values)                   = singleOrAll $ map Mdb.val values
         where singleOrAll [x] = x
               singleOrAll xs = Mdb.Array xs
-    val (Unknown {count})                       = Mdb.Doc [ strtype "Unknown", "Count" =: count ]
+    val Unknown {count}                       = Mdb.Doc [ strtype "Unknown", "Count" =: count ]
 
     cast' _ = Nothing
 
 instance NFData BsonSchema where
-    rnf s = (database s) `deepseq`
-            (collection s) `deepseq`
-            (schema s) `deepseq`
+    rnf s = database s `deepseq`
+            collection s `deepseq`
+            schema s `deepseq`
             ((count :: BsonSchema -> Int64) s) `deepseq`
             ()
 
 instance NFData SValue where
-    rnf (Float { count, fmin, fmax })             = count `deepseq` fmin `deepseq` fmax `deepseq` ()
-    rnf (String { count, minLen, maxLen })        = count `deepseq` minLen `deepseq` maxLen `deepseq` ()
-    rnf (Doc { count, doc })                      = count `deepseq` doc `deepseq` ()
-    rnf (Array { count, values, minLen, maxLen }) = count `deepseq` values `deepseq` minLen `deepseq` maxLen `deepseq` ()
-    rnf (Bin { count, minLen, maxLen })           = count `deepseq` minLen `deepseq` maxLen `deepseq` ()
-    rnf (Fun { count, minLen, maxLen })           = count `deepseq` minLen `deepseq` maxLen `deepseq` ()
-    rnf (Uuid { count })                          = rnf count
-    rnf (Md5 { count })                           = rnf count
-    rnf (UserDef { count, minLen, maxLen })       = count `deepseq` minLen `deepseq` maxLen `deepseq` ()
-    rnf (ObjId { count })                         = rnf count
-    rnf (Bool { count, trues, falses })           = count `deepseq` trues `deepseq` falses `deepseq` ()
-    rnf (UTC { count, dmin, dmax })               = count `deepseq` dmin `deepseq` dmax `deepseq` ()
-    rnf (Null { count })                          = rnf count
-    rnf (Regex { count })                         = rnf count
-    rnf (JavaScript { count })                    = rnf count
-    rnf (Sym { count })                           = rnf count
-    rnf (Int32 { count, min, max })               = count `deepseq` min `deepseq` max `deepseq` ()
-    rnf (Int64 { count, min, max })               = count `deepseq` min `deepseq` max `deepseq` ()
-    rnf (Stamp { count })                         = rnf count
-    rnf (MinMax { count })                        = rnf count
-    rnf (MultiValue values)                       = rnf values
-    rnf (Unknown { count })                       = rnf count
+    rnf Float { count, fmin, fmax }             = count `deepseq` fmin `deepseq` fmax `deepseq` ()
+    rnf String { count, minLen, maxLen }        = count `deepseq` minLen `deepseq` maxLen `deepseq` ()
+    rnf Doc { count, doc }                      = count `deepseq` doc `deepseq` ()
+    rnf Array { count, values, minLen, maxLen } = count `deepseq` values `deepseq` minLen `deepseq` maxLen `deepseq` ()
+    rnf Bin { count, minLen, maxLen }           = count `deepseq` minLen `deepseq` maxLen `deepseq` ()
+    rnf Fun { count, minLen, maxLen }           = count `deepseq` minLen `deepseq` maxLen `deepseq` ()
+    rnf Uuid { count }                          = rnf count
+    rnf Md5 { count }                           = rnf count
+    rnf UserDef { count, minLen, maxLen }       = count `deepseq` minLen `deepseq` maxLen `deepseq` ()
+    rnf ObjId { count }                         = rnf count
+    rnf Bool { count, trues, falses }           = count `deepseq` trues `deepseq` falses `deepseq` ()
+    rnf UTC { count, dmin, dmax }               = count `deepseq` dmin `deepseq` dmax `deepseq` ()
+    rnf Null { count }                          = rnf count
+    rnf Regex { count }                         = rnf count
+    rnf JavaScript { count }                    = rnf count
+    rnf Sym { count }                           = rnf count
+    rnf Int32 { count, min, max }               = count `deepseq` min `deepseq` max `deepseq` ()
+    rnf Int64 { count, min, max }               = count `deepseq` min `deepseq` max `deepseq` ()
+    rnf Stamp { count }                         = rnf count
+    rnf MinMax { count }                        = rnf count
+    rnf (MultiValue values)                     = rnf values
+    rnf Unknown { count }                       = rnf count
 
 instance NFData Mdb.Field where
     rnf (label Mdb.:= value) = label `deepseq` value `deepseq` ()
@@ -274,10 +274,10 @@ instance NFData Mdb.MinMaxKey where
     rnf Mdb.MaxKey = ()
 
 mapToDocument :: BsonDocument -> Mdb.Document
-mapToDocument = map (\(k, a) -> k Mdb.=: a) . Map.toList
+mapToDocument = map (uncurry (Mdb.=:)) . Map.toList
 
 strtype :: String -> Mdb.Field
-strtype str = "Type" Mdb.:= (Mdb.String $ Text.pack str)
+strtype str = "Type" Mdb.:= Mdb.String (Text.pack str)
 
 equalByCtor :: Mdb.Value -> Mdb.Value -> Bool
 equalByCtor (Mdb.Float _) (Mdb.Float _)     = True

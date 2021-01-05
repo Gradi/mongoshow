@@ -9,7 +9,7 @@ import qualified Data.Text as Text
 import qualified Data.Time as Time
 import qualified Data.Time.Format as TimeFormat
 import qualified Database.MongoDB as Mdb
-import qualified Numeric as Numeric
+import qualified Numeric
 import Prettyprinter
 import Prettyprinter.Render.Text
 import Data.List (intersperse)
@@ -46,7 +46,7 @@ instance Pretty Mdb.Value where
     pretty (Mdb.MinMax minMax)                    = pretty $ wrap' $ show minMax
 
 instance Pretty Mdb.Field where
-    pretty (label Mdb.:= value) = (pretty $ wrap label) <> pretty (": " :: String ) <> pretty value
+    pretty (label Mdb.:= value) = pretty (wrap label) <> pretty (": " :: String ) <> pretty value
 
 instance Pretty ByteString.ByteString where
     pretty = pretty . wrap' . ByteString.foldl' toHex []

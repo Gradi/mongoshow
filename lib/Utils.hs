@@ -11,7 +11,7 @@ import Data.List (foldl')
 -- >> groupBy (==) [1, 2, 3, 1, 2, 3, 1, 2, 3]
 -- >> [[1, 1, 1], [2, 2, 2], [3, 3, 3]]
 groupBy :: (a -> a -> Bool) -> [a] -> [[a]]
-groupBy eq list = foldl' (addOrCreateToSublist eq) [] list
+groupBy eq = foldl' (addOrCreateToSublist eq) []
 
 -- | 'sumBy' sum elements of list using summator function
 --   with first element of list as initial value, but if

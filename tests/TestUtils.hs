@@ -5,7 +5,7 @@ module TestUtils
     ) where
 
 import qualified Data.List as List
-import qualified Utils as Utils
+import qualified Utils
 import Test.QuickCheck
 import Test.QuickCheck.All
 
@@ -42,7 +42,7 @@ unique :: (Eq a) => [a] -> Int
 unique = length . List.nub
 
 uniqueElement :: (Eq a) => a -> [a] -> Int
-uniqueElement x = length . List.filter (\y -> x == y)
+uniqueElement x = length . List.filter (x ==)
 
 true :: Bool -> Bool
 true = id

@@ -1,20 +1,21 @@
- {-# LANGUAGE OverloadedStrings, TypeSynonymInstances, FlexibleInstances #-}
+ {-# LANGUAGE OverloadedStrings, FlexibleInstances #-}
 
 module BsonSchemasView
     ( ViewModel(..)
     , render
     ) where
 
-import qualified BsonSchema as BsonSchema
+import qualified BsonSchema
 import qualified Data.Text as Text
 import qualified Data.Time as Time
 import qualified Data.Time.Format as TimeFormat
 import qualified Database.MongoDB as Mdb
-import qualified PrettyPrintBson as PrettyPrintBson
+import qualified PrettyPrintBson
 import Control.Monad.Reader
 import Data.List (intersperse)
 import Data.String (IsString(fromString))
 import Utils (groupBy)
+import Data.Functor ((<&>))
 import Text.Blaze.Html5 as H
 import Text.Blaze.Html5.Attributes as A
 
@@ -45,7 +46,7 @@ renderHead = do
         H.head $ do
             meta ! charset "utf-8"
             highlightjs
-            H.title $ title
+            H.title title
 
 renderBody :: View
 renderBody = do
@@ -58,7 +59,7 @@ renderBody = do
 
     return $ body $ do
         h1 $ toHtml ("Host " ++ host)
-        p $ (toHtml ("Date " :: String)) >> toHtml time
+        p $ toHtml ("Date " :: String) >> toHtml time
         hr
         H.div $ do
             h2 "Contents: "
@@ -80,15 +81,15 @@ renderTocEntry dbCollections = return $ H.div $ do
 
 renderSingleDbSection :: [BsonSchema.BsonSchema] -> View
 renderSingleDbSection dbColls = do
-    schemasSection <- mapM renderSchemaSection dbColls >>= return . toHtml
+    schemasSection <- mapM renderSchemaSection dbColls <&> toHtml
     return $ H.div $ do
-        h2 ! A.id (dbId db) $ (dbName db)
+        h2 ! A.id (dbId db) $ dbName db
         schemasSection
         where db = Prelude.head dbColls
 
 renderSchemaSection :: BsonSchema.BsonSchema -> View
 renderSchemaSection schema = return $ H.div $ do
-    h3 ! A.id (collId schema) $ (collName schema)
+    h3 ! A.id (collId schema) $ collName schema
     p $ do
         "Documents read: "
         toHtml $ BsonSchema.count schema
